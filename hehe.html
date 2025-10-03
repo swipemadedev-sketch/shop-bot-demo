@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Order Creator</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #100F14;
+            --card-color: #1C1C1E;
+            --button-color: #2C2C2E;
+            --text-color: #FFFFFF;
+            --text-secondary-color: #8A8A8E;
+            --accent-color: #6A5AF9;
+            --accent-gradient: linear-gradient(90deg, #8A7FFF, #6A5AF9);
+            --border-color: #3A3A3C;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: var(--text-secondary-color);
+            margin: 5px 0 0;
+        }
+
+        .section {
+            width: 100%;
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 17px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.1s ease;
+        }
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: var(--text-color);
+        }
+        
+        .btn-secondary {
+            background-color: var(--button-color);
+            color: var(--text-color);
+        }
+        
+        /* Category & Payment Buttons */
+        .category-btn, .payment-option {
+            background-color: var(--card-color);
+            justify-content: flex-start;
+            text-align: left;
+        }
+        .category-btn span, .payment-option .payment-details {
+             flex-grow: 1;
+        }
+        .payment-option {
+            border: 2px solid transparent;
+        }
+        .payment-option.selected {
+            border: 2px solid var(--accent-color);
+        }
+        .payment-option .payment-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .payment-option .payment-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary-color);
+            margin-top: 4px;
+        }
+
+        /* Product List */
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-color);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+        .product-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .product-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .product-price {
+            font-size: 14px;
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            background-color: var(--button-color);
+            border-radius: 8px;
+            padding: 4px;
+        }
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            background-color: transparent;
+            color: var(--text-color);
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .quantity-display {
+            margin: 0 12px;
+            font-size: 16px;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+        }
+        
+        /* Checkout Footer */
+        .checkout-footer {
+            position: sticky;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--bg-color);
+            padding: 15px 0;
+            border-top: 1px solid var(--border-color);
+        }
+        .total-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        /* Order Summary Card */
+        .order-summary {
+            background-color: var(--card-color);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 20px;
+        }
+        .summary-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+        .summary-item span:first-child {
+            color: var(--text-secondary-color);
+        }
+        .summary-item span:last-child {
+            font-weight: 500;
+        }
+        .summary-total {
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        .helper-text {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary-color);
+            margin-top: 15px;
+        }
+
+        /* Icons */
+        .icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-secondary-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="category-selection" class="section">
+            <div class="header">
+                <h1>EZCC</h1>
+                <p>Select Product Category</p>
+            </div>
+            <button class="btn category-btn" onclick="selectCategory('B')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"></path></svg>
+                <span>UHQ Bank Logs</span>
+            </button>
+            <button class="btn category-btn" onclick="selectCategory('C')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"></path></svg>
+                <span>UHQ CCs</span>
+            </button>
+        </div>
+
+        <div id="product-selection" class="section hidden">
+            <div class="header">
+                <h1 id="product-header-title"></h1>
+                <p>Select products and quantities</p>
+            </div>
+            <div id="products-list"></div>
+            <div class="checkout-footer">
+                <div class="total-display">
+                    <span>Total:</span>
+                    <span id="running-total">$0</span>
+                </div>
+                <button class="btn btn-primary" onclick="showCheckout()">Proceed</button>
+            </div>
+             <button class="btn btn-secondary" onclick="goBack('category-selection')">Back</button>
+        </div>
+
+        <div id="checkout" class="section hidden">
+            <div class="header">
+                <h1>Sending From</h1>
+                <p>Choose your payment method</p>
+            </div>
+            
+            <button id="payment-wallet" class="btn payment-option" onclick="selectPayment('Crypto Wallet')">
+                 <svg class="icon" viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg>
+                <div class="payment-details">
+                    <div class="payment-title">Crypto Wallet</div>
+                    <div class="payment-subtitle">No additional fees</div>
+                </div>
+            </button>
+            <button id="payment-voucher" class="btn payment-option" onclick="selectPayment('Crypto Voucher')">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-2 .89-2 2v11c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zM10 4h4v2h-4V4zm10 17H4V8h16v13z"></path><path d="M9.5 15.5c0 .83.67 1.5 1.5 1.5h2c.83 0 1.5-.67 1.5-1.5V13c0-.83-.67-1.5-1.5-1.5h-2c-.83 0-1.5.67-1.5 1.5v2.5z"></path></svg>
+                <div class="payment-details">
+                    <div class="payment-title">Crypto Voucher</div>
+                    <div class="payment-subtitle">+$5 USD fee</div>
+                </div>
+            </button>
+
+            <div id="order-summary-card" class="order-summary hidden">
+                <div class="summary-title">Order Summary</div>
+                <div id="order-details"></div>
+                <div id="subtotal-line" class="summary-item"></div>
+                <div id="fee-line" class="summary-item"></div>
+                <div id="total-line" class="summary-item summary-total"></div>
+            </div>
+
+            <button id="create-ticket-btn" class="btn btn-primary hidden" onclick="createTicket()">Create Ticket</button>
+            <button class="btn btn-secondary" onclick="goBack('product-selection')">Back</button>
+        </div>
+    </div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    const products = {
+        'B': {
+            name: "UHQ Bank Logs",
+            items: [
+                { name: 'Barclays', price: 50 }, { name: 'Revolut Business', price: 70 },
+                { name: 'Bank of America', price: 60 }, { name: 'PaySafe', price: 40 },
+                { name: 'Wells Fargo', price: 50 }, { name: 'Chase', price: 60 }
+            ]
+        },
+        'C': {
+            name: "UHQ CCs",
+            items: [
+                { name: 'Global', price: 30 }, { name: 'HQ', price: 25 },
+                { name: 'US', price: 30 }, { name: 'EU', price: 30 },
+                { name: 'Base', price: 5 }
+            ]
+        }
+    };
+
+    let order = {
+        category: null,
+        items: {},
+        paymentMethod: null,
+        subtotal: 0,
+        fee: 0,
+        total: 0
+    };
+
+    function showSection(sectionId) {
+        document.querySelectorAll('.section').forEach(section => section.classList.add('hidden'));
+        document.getElementById(sectionId).classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+
+    function goBack(sectionId) {
+        if (sectionId === 'product-selection') {
+            // Clear payment selection when going back to products
+            clearPaymentSelection();
+        }
+        showSection(sectionId);
+    }
+
+    function generateProductList(category) {
+        const listDiv = document.getElementById('products-list');
+        listDiv.innerHTML = ''; // Clear previous list
+        products[category].items.forEach(p => {
+            const currentQuantity = order.items[p.name]?.quantity || 0;
+            listDiv.innerHTML += `
+                <div class="product-item">
+                    <div class="product-info">
+                        <span class="product-name">${p.name}</span>
+                        <span class="product-price">$${p.price}</span>
+                    </div>
+                    <div class="quantity-selector">
+                        <button class="quantity-btn" onclick="updateQuantity('${p.name}', -1, ${p.price})">-</button>
+                        <span id="quantity-${p.name}" class="quantity-display">${currentQuantity}</span>
+                        <button class="quantity-btn" onclick="updateQuantity('${p.name}', 1, ${p.price})">+</button>
+                    </div>
+                </div>`;
+        });
+    }
+
+    function selectCategory(category) {
+        if (order.category !== category) {
+            // Reset order if category changes
+            order.items = {};
+            order.subtotal = 0;
+            updateRunningTotal();
+        }
+        order.category = category;
+        document.getElementById('product-header-title').textContent = products[category].name;
+        generateProductList(category);
+        showSection('product-selection');
+    }
+
+    function updateQuantity(productName, change, price) {
+        if (!order.items[productName]) {
+            order.items[productName] = { quantity: 0, price: price };
+        }
+        
+        let newQuantity = order.items[productName].quantity + change;
+        if (newQuantity >= 0) {
+            order.items[productName].quantity = newQuantity;
+            document.getElementById(`quantity-${productName}`).textContent = newQuantity;
+        }
+
+        if (order.items[productName].quantity === 0) {
+            delete order.items[productName];
+        }
+        updateRunningTotal();
+    }
+
+    function updateRunningTotal() {
+        let subtotal = 0;
+        for (const key in order.items) {
+            const item = order.items[key];
+            subtotal += item.quantity * item.price;
+        }
+        order.subtotal = subtotal;
+        document.getElementById('running-total').textContent = `$${order.subtotal}`;
+    }
+
+    function showCheckout() {
+        if (Object.keys(order.items).length === 0) {
+            alert('Please select at least one product.');
+            return;
+        }
+        showSection('checkout');
+    }
+
+    function selectPayment(method) {
+        order.paymentMethod = method;
+        
+        // Update button styles
+        document.querySelectorAll('.payment-option').forEach(btn => btn.classList.remove('selected'));
+        const btnId = method === 'Crypto Wallet' ? 'payment-wallet' : 'payment-voucher';
+        document.getElementById(btnId).classList.add('selected');
+
+        calculateTotal();
+        displaySummary();
+    }
+    
+    function clearPaymentSelection() {
+        order.paymentMethod = null;
+        order.fee = 0;
+        order.total = 0;
+        document.querySelectorAll('.payment-option').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById('order-summary-card').classList.add('hidden');
+        document.getElementById('create-ticket-btn').classList.add('hidden');
+    }
+
+    function calculateTotal() {
+        order.fee = (order.paymentMethod === 'Crypto Voucher') ? 5 : 0;
+        order.total = order.subtotal + order.fee;
+    }
+
+    function displaySummary() {
+        const detailsDiv = document.getElementById('order-details');
+        detailsDiv.innerHTML = '';
+        
+        for (const key in order.items) {
+            const item = order.items[key];
+            if (item.quantity > 0) {
+                detailsDiv.innerHTML += `
+                    <div class="summary-item">
+                        <span>${key} x${item.quantity}</span>
+                        <span>$${item.quantity * item.price}</span>
+                    </div>`;
+            }
+        }
+        
+        document.getElementById('subtotal-line').innerHTML = `<span>Subtotal</span><span>$${order.subtotal}</span>`;
+        document.getElementById('fee-line').innerHTML = `<span>Fee</span><span>$${order.fee}</span>`;
+        document.getElementById('total-line').innerHTML = `<span>Total</span><span>$${order.total}</span>`;
+
+        document.getElementById('order-summary-card').classList.remove('hidden');
+        document.getElementById('create-ticket-btn').classList.remove('hidden');
+    }
+
+    function createTicket() {
+        const ticketData = {
+            user: tg.initDataUnsafe?.user,
+            order: {
+                category: products[order.category].name,
+                items: order.items,
+                paymentMethod: order.paymentMethod,
+                subtotal: order.subtotal,
+                fee: order.fee,
+                total: order.total
+            },
+            timestamp: new Date().toISOString()
+        };
+        
+        tg.sendData(JSON.stringify(ticketData));
+        // tg.close(); // Uncomment to close the app after sending data
+    }
+
+    // Initialize the app
+    showSection('category-selection');
+</script>
+
+</body>
+</html>
