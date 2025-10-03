@@ -462,24 +462,36 @@
         document.getElementById('order-summary-card').classList.remove('hidden');
         document.getElementById('create-ticket-btn').classList.remove('hidden');
     }
+	
+    function createTicket() {
+        // Disable the button to prevent spam clicks
+        document.getElementById('create-ticket-btn').disabled = true;
 
-    function createTicket() {
-        const ticketData = {
-            user: tg.initDataUnsafe?.user,
-            order: {
-                category: products[order.category].name,
-                items: order.items,
-                paymentMethod: order.paymentMethod,
-                subtotal: order.subtotal,
-                fee: order.fee,
-                total: order.total
-            },
-            timestamp: new Date().toISOString()
-        };
-        
-        tg.sendData(JSON.stringify(ticketData));
-        // tg.close(); // Uncomment to close the app after sending data
-    }
+        // Prepare the data to be sent back to the bot
+        const ticketData = {
+            user: tg.initDataUnsafe?.user,
+            order: {
+                // I added this line so the bot knows the category name
+                category: order.category, 
+                items: order.items,
+                paymentMethod: order.paymentMethod,
+                subtotal: order.subtotal,
+      _          fee: order.fee,
+                total: order.total
+            },
+            timestamp: new Date().toISOString()
+        };
+        
+        // Send the data to your bot
+        tg.sendData(JSON.stringify(ticketData));
+        
+        // ---- THIS IS THE FIX ----
+        // Show a confirmation popup to the user
+        tg.showAlert('Your ticket has been created successfully!');
+        
+        // Close the Mini App
+        tg.close();
+    }
 
     // Initialize the app
     showSection('category-selection');
